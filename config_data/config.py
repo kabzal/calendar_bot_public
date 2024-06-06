@@ -17,8 +17,9 @@ class Config:
     tg_bot: TgBot
     db: DatabaseConfig
 
+
 # Создаем функцию, которая будет читать файл .env и возвращать
-# экземпляр класса Config с заполненным полем token
+# экземпляр класса Config с заполненными полями
 def load_config(path: str | None = None) -> Config:
     env = Env()
     env.read_env(path)

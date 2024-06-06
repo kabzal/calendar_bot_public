@@ -9,10 +9,12 @@ from keyboards.kb_total import kb_clients_appointments
 from keyboards.kb_admin import kb_main_admin, kb_all_times, kb_return_to_calendar, kb_ok_cancel_func, kb_return_to_clients, kb_delete_free_time_func, kb_cancel_app_from_calendar
 
 router: Router = Router()
+# Фильтры на коллбэки и сообщения от админа
 router.callback_query.filter(IsAdminCall())
 router.message.filter(IsAdminMess())
 
-#Открывается список актуальных записей
+
+# Открывается список актуальных записей
 @router.callback_query(Text(text='my_clients'))
 async def show_admin_appointments(callback: CallbackQuery):
     list_of_apps = await show_appointments(callback.from_user.id)
@@ -23,33 +25,46 @@ async def show_admin_appointments(callback: CallbackQuery):
         kb_admin_appointments_builder = await kb_clients_appointments(list_of_apps)
         await callback.message.edit_text(text='К вам пока нет ни одной записи', reply_markup=kb_admin_appointments_builder.as_markup())
 
-#Выход в стартовое меню админа
+
+# Возврат в стартовое меню админа
 @router.callback_query(Text(text='back_to_begining'))
 async def back_to_admin_beginning(callback: CallbackQuery):
     await callback.message.edit_text(LEX_ADMIN_MESSAGES['start_message'], reply_markup=kb_main_admin)
 
-#Выбрана дата в календаре, высвечиваются свободные и занятые часы
+
+# Выбрана дата в календаре, высвечиваются свободные и занятые часы
 @router.callback_query(IsValidDate())
 async def date_chosen(callback: CallbackQuery, dates_list: list[int]):
+
+    # Определяем и сохраняем выбранную дату
     current_date = str(date(day=dates_list[0], month=dates_list[1], year=dates_list[2]))
     await change_user_date(user_id=callback.from_user.id, cur_date=current_date)
+
+    # Выгружаем и выдаем список свободных окон и забронированных записей в выбранную дату
     all_times = await show_all(callback.from_user.id, current_date)
     kb_all_times_builder = await kb_all_times(all_times, current_date)
+
     if all_times:
         await callback.message.edit_text(text='Выберите время:\n\n🟢 - это время свободно\n🔴 - на это время есть запись', reply_markup=kb_all_times_builder.as_markup())
     else:
         await callback.message.edit_text(text='Часы для записи в этот день не добавлены', reply_markup=kb_all_times_builder.as_markup())
 
-#Нажата кнопка Добавить, предлагается ввести время
+
+# Нажата кнопка Добавить (новое окно для записи), предлагается ввести время
 @router.callback_query(Text(text='add_new_appoint'))
 async def add_new_free_time(callback: CallbackQuery):
     await callback.message.edit_text(text=LEX_ADMIN_MESSAGES['set_time_start'])
 
-#Обрабатывается введенное время
-@router.message(IsValidFreeTime())
+
+# Обрабатывается введенное время
+@router.message(IsValidFreeTime())  # Проверка ввода корректного времени
 async def new_free_time_given(message: Message, times_list: list[str]):
+
+    # Определяем выбранную дату
     current_date = await show_user_date(user_id=message.from_user.id)
     current_date = str(date(year=current_date[0], month=current_date[1], day=current_date[2]))
+
+    # Если введено корректное время и оно не было ранее введено, создается новое окно
     if 0 <= int(times_list[0]) <= 23 and 0 <= int(times_list[1]) <= 59:
         given_time = ':'.join(times_list)
         check = await free_time_question(user_id=message.from_user.id, app_date=current_date, app_time=given_time)
@@ -62,13 +77,18 @@ async def new_free_time_given(message: Message, times_list: list[str]):
     else:
         await message.answer(text='Вы ввели некорректное время. Попробуйте еще раз!')
 
-#Выбрана какая-нибудь запись
+
+# Выбрана какая-нибудь бронь (запись клиента)
 @router.callback_query(IsAppData())
 async def app_opened(callback: CallbackQuery, app_data: list[str]):
-    app_date = app_data[2] #Из списка выгружается дата
-    app_time = app_data[1] #Из списка выгружается время
+    app_date = app_data[2]  # Из коллбэка выгружается дата
+    app_time = app_data[1]  # Из коллбэка выгружается время
+
+    # Выгружается запись из БД по дате и времени
     the_appointment = await show_the_appointment(user_id=callback.from_user.id, app_date=app_date, app_time=app_time)
     formatted_date = datetime.strftime(datetime.strptime(app_date, "%Y-%m-%d"), "%d.%m.%Y")
+
+    # Выдаем инфо о записи и клавиатуру с действиями
     kb_ok_cancel = (await kb_ok_cancel_func(current_date=app_date, current_time=app_time))[0]
     await callback.message.edit_text(text='К вам запись\n'
                                         f'на {formatted_date} в {app_time}\n\n'
