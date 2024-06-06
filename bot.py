@@ -11,6 +11,7 @@ from keyboards.main_menu import set_main_menu
 # Инициализируем логгер
 logger = logging.getLogger(__name__)
 
+
 # Функция конфигурирования и запуска бота
 async def main():
     # Конфигурируем логирование
@@ -21,7 +22,6 @@ async def main():
 
     # Выводим в консоль информацию о начале запуска бота
     logger.info('Starting bot')
-
 
     # Загружаем конфиг в переменную config
     config: Config = load_config()

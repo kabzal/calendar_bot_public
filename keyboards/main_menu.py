@@ -3,6 +3,8 @@ from aiogram.types import BotCommand
 
 from lexicon.general_lex import MAIN_MENU
 
+
+# Функция для формирования главного меню команд
 async def set_main_menu(bot: Bot):
     main_menu_commands = [BotCommand(
         command=command,

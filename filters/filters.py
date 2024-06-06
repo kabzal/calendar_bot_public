@@ -3,30 +3,35 @@ from aiogram.types import Message, CallbackQuery
 from sql_requests.sql_requests import show_user_role
 
 
-
+# Фильтр: коллбэки админа
 class IsAdminCall(BaseFilter):
     async def __call__(self, callback: CallbackQuery) -> bool:
         role = await show_user_role(callback.from_user.id)
         return role == 'admin'
 
+
+# Фильтр: коллбэки клиента
 class IsClientCall(BaseFilter):
     async def __call__(self, callback: CallbackQuery) -> bool:
         role = await show_user_role(callback.from_user.id)
         return role == 'client'
 
 
+# Фильтр: сообщения админа
 class IsAdminMess(BaseFilter):
     async def __call__(self, message: Message) -> bool:
         role = await show_user_role(message.from_user.id)
         return role == 'admin'
 
+
+# Фильтр: сообщения клиента
 class IsClientMess(BaseFilter):
     async def __call__(self, message: Message) -> bool:
         role = await show_user_role(message.from_user.id)
         return role == 'client'
 
 
-
+# Фильтр: корректная дата
 class IsValidDate(BaseFilter):
     async def __call__(self, callback: CallbackQuery) -> bool | dict[str, list[int]]:
         dates_list = []
@@ -39,6 +44,8 @@ class IsValidDate(BaseFilter):
             return {'dates_list': dates_list}
         return False
 
+
+# Фильтр: корректное время
 class IsValidFreeTime(BaseFilter):
     async def __call__(self, message: Message) -> bool | dict[str, list[str]]:
         times_list = []
@@ -51,6 +58,8 @@ class IsValidFreeTime(BaseFilter):
         except:
             return False
 
+
+# Фильтр: если коллбэк startFSM, то передаем в хэндлер список
 class IsValidFSM(BaseFilter):
     async def __call__(self, callback: CallbackQuery) -> bool | dict[str, list[str]]:
         appointment_data = []
@@ -60,6 +69,8 @@ class IsValidFSM(BaseFilter):
             return {'appointment_data': appointment_data}
         return False
 
+
+# Фильтр: корректные ФИО
 class IsValidSNP(BaseFilter):
     async def __call__(self, message: Message) -> bool | str:
         snp = []
@@ -72,6 +83,9 @@ class IsValidSNP(BaseFilter):
         except:
             return False
 
+
+# Фильтр: если коллбэк app (запрос конкретной записи),
+# Передаем в хэндлер данные о записи
 class IsAppData(BaseFilter):
     async def __call__(self, callback: CallbackQuery) -> bool | dict[str, list[str]]:
         app_data = []
