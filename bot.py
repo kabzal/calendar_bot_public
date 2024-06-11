@@ -3,7 +3,7 @@ import logging
 
 from aiogram import Bot, Dispatcher
 from config_data.config import Config, load_config
-from handlers import general, clients_handlers, admin_handlers, clientFSM, any_handler
+from handlers import general, clients_handlers, admin_handlers, clientFSM, any_handler, adminFSM
 
 from inner_calendar import calendar
 from keyboards.main_menu import set_main_menu
@@ -38,6 +38,7 @@ async def main():
     dp.include_router(calendar.router)
     dp.include_router(clients_handlers.router)
     dp.include_router(admin_handlers.router)
+    dp.include_router(adminFSM.router)
     dp.include_router(clientFSM.router)
     dp.include_router(any_handler.router)
 

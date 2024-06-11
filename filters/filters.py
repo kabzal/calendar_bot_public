@@ -53,7 +53,7 @@ class IsValidFreeTime(BaseFilter):
             for t in message.text.split(':'):
                 if t.isdigit():
                     times_list.append(t)
-            if times_list and len(times_list) == 2:
+            if times_list and len(times_list) == 2 and 0 <= int(times_list[0]) <= 23 and 0 <= int(times_list[1]) <= 59:
                 return {'times_list': times_list}
         except:
             return False
