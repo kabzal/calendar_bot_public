@@ -51,7 +51,7 @@ async def start_admin_FSM(callback: CallbackQuery, state: FSMContext):
 
 # Хэндлер при корректном вводе времени
 @router.message(StateFilter(FSMAdmin.fill_time), IsValidFreeTime())
-async def fill_phone_process(message: Message, state: FSMContext, times_list: list[str]):
+async def success_add_new_free_time(message: Message, state: FSMContext, times_list: list[str]):
 
     # Определяем выбранную дату
     current_date = await show_user_date(user_id=message.from_user.id)
